@@ -38,6 +38,12 @@ main{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;
 .message-input ul,.message-input ol{padding-left:1.6em}
 .message-input a,.message-copy a{color:#8db5ee}
 .message-input img{display:block;max-width:min(100%,520px);max-height:340px;object-fit:contain;margin:12px 0;border:1px solid #233957}
+.message-copy{white-space:normal}
+.message-copy p,.message-copy div{margin:0 0 .85em}
+.message-copy ul,.message-copy ol{margin:.4em 0 .85em;padding-left:1.6em}
+.message-copy blockquote{margin:.6em 0;padding-left:12px;border-left:1px solid #29466d;color:#8da4c4}
+.message-copy img{display:block;max-width:100%;max-height:250px;object-fit:contain;margin:10px 0;border:1px solid #233957}
+.message-copy hr{border:0;border-top:1px solid #1d2d44}
 .message-input .inline-attachment{display:inline-block;margin:3px;padding:4px 7px;border:1px solid #203754;color:#a6bddc;font:8px var(--mono);vertical-align:middle}
 .attachment-list{display:flex;flex-wrap:wrap;gap:7px;flex:none;max-height:84px;overflow:auto;margin-top:8px}
 .attachment-list[hidden]{display:none}

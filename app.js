@@ -300,12 +300,14 @@
     $('selected-status').classList.toggle('done', sent);
     $('selected-email').textContent = address || 'No email address';
     $('selected-subject').textContent = personalized($('subject').value, record) || '(no subject)';
-    $('selected-message').textContent = personalized(messageText(), record);
+    const preview = $('selected-message');
+    const previewHtml = personalizedHtml(record);
+    preview.innerHTML = previewHtml || 'Your personalized message will appear here.';
     $('prev-recipient').disabled = recipients.length < 2;
     $('next-recipient').disabled = recipients.length < 2;
     $('send-selected').disabled = sent || !address;
-    $('send-selected').querySelector('span').textContent = sent ? 'Prepared' : (editorHasRichContent() ? 'Save .eml' : 'Open mail');
-    $('send-selected').setAttribute('aria-label', sent ? 'Draft prepared' : (editorHasRichContent() ? 'Save email draft with media' : 'Open draft in mail app'));
+    $('send-selected').querySelector('span').textContent = sent ? 'Prepared' : (editorHasRichContent() ? 'Export .eml' : 'Open mail');
+    $('send-selected').setAttribute('aria-label', sent ? 'Draft prepared' : (editorHasRichContent() ? 'Export email draft with media' : 'Open draft in mail app'));
   }
 
   function escapeText(text) {
