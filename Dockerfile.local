@@ -4,6 +4,7 @@ ENV NODE_ENV=production HOST=0.0.0.0 PORT=8787
 WORKDIR /app
 
 COPY local-edition ./local-edition
+COPY hero-dither.js ./hero-dither.js
 COPY assets/local-edition-header.png ./assets/local-edition-header.png
 
 USER node

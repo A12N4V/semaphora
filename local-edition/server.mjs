@@ -15,6 +15,7 @@ const assets = new Map([
   ['/local-edition/', [join(HERE, 'index.html'), 'text/html; charset=utf-8']],
   ['/local-edition/app.js', [join(HERE, 'app.js'), 'text/javascript; charset=utf-8']],
   ['/local-edition/styles.css', [join(HERE, 'styles.css'), 'text/css; charset=utf-8']],
+  ['/hero-dither.js', [join(ROOT, 'hero-dither.js'), 'text/javascript; charset=utf-8']],
   ['/assets/local-edition-header.png', [join(ROOT, 'assets', 'local-edition-header.png'), 'image/png']],
 ]);
 

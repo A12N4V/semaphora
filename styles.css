@@ -292,3 +292,7 @@ main,.hero,.desk,.tabs,.tab-panel,.panel-top,.panel-top>div,.field-row,
 .compose-foot>span{min-width:0;overflow-wrap:anywhere}
 .integration-compose-head{flex-wrap:wrap}
 .integration-target select{min-width:0}
+:root{--active-blue:#5790e5}
+.hero-dither{z-index:3}
+.hero-title{z-index:2;bottom:28px}
+.hero-title h1{color:var(--active-blue)}

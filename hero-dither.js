@@ -1,5 +1,5 @@
 /*
- * Semaphora banner screen, adapted from Homonin's
+ * Semaphora banners, adapted from Homonin's
  * homonin-landing/apps/web/src/components/ethics/DitherCanvas.tsx.
  * Keeps the original banner visible and places an ordered, transparent
  * ink-dot pass over its luminance. Bayer matrix and percentile stretch follow
@@ -80,5 +80,6 @@
   }
 
   attachDither('hero-art', 'hero-dither');
+  attachDither('local-app-hero-art', 'local-app-hero-dither');
   attachDither('local-hero-art', 'local-hero-dither');
 })();

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#03060b">
+  <meta name="theme-color" content="#000000">
   <meta name="description" content="Run Semaphora Local on your own machine to audit contact lists and campaign data.">
   <title>Semaphora Local</title>
-  <link rel="stylesheet" href="/local-edition/styles.css">
+  <link rel="stylesheet" href="/local-edition/styles.css?v=2">
 </head>
 <body>
   <main class="local-app">
@@ -16,9 +16,9 @@
     </header>
 
     <section class="local-hero" aria-label="Semaphora Local">
-      <img src="/assets/local-edition-header.png" alt="A Greek messenger carrying a letter through a moonlit city">
-      <div class="local-hero-shade"></div>
-      <div class="local-hero-copy"><span>CONTACT INTELLIGENCE · V0.1</span><h1>Know your list.</h1><p>Inspect the rows behind every recommendation.</p></div>
+      <img id="local-app-hero-art" src="/assets/local-edition-header.png" alt="A Greek messenger carrying a letter through a moonlit city">
+      <canvas class="local-hero-dither" id="local-app-hero-dither" aria-hidden="true"></canvas>
+      <div class="local-hero-copy"><span>CONTACT INTELLIGENCE · V0.1</span><h1>Know your list.</h1></div>
       <span class="hero-mark" aria-hidden="true">01 <i>/</i> AUDIT</span>
     </section>
 
@@ -53,6 +53,7 @@
     <footer class="local-footer"><span>SEMAPHORA LOCAL · USER-RUN</span><span>CONTACT AUDIT · NO DELIVERY</span></footer>
     <div class="notice" id="notice" role="status" aria-live="polite"></div>
   </main>
+  <script src="/hero-dither.js?v=3"></script>
   <script src="/local-edition/app.js"></script>
 </body>
 </html>
