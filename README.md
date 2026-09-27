@@ -4,7 +4,7 @@
 
 A static mail merge workspace. Edit a recipient table or import a CSV, write a message with `(column_name)` fields, then prepare drafts or send through a connected Gmail or Microsoft mailbox.
 
-**Semaphora has two editions:** Studio is the browser app hosted here on GitHub Pages. [Semaphora Local](LOCAL-EDITION.md) is the planned localhost workbench for campaign analysis and personal inbox cleanup.
+**Semaphora has two editions:** Studio is the browser app hosted here on GitHub Pages. [Semaphora Local](LOCAL-EDITION.md) is the self-hosted workbench, starting with a local contact-list auditor.
 
 ## Use
 
@@ -25,7 +25,13 @@ Recipient lists, message content, attachments, logs, and OAuth access tokens are
 
 ## Local edition
 
-The planned local workbench brings campaign analysis, contact hygiene, attribution, and reviewed inbox cleanup to the user's own computer. Read [LOCAL-EDITION.md](LOCAL-EDITION.md) for the product split, architecture, roadmap, and comparison points.
+Start Semaphora Local from the repository root with Docker:
+
+```sh
+docker compose -f compose.local.yaml up --build
+```
+
+Then open `http://127.0.0.1:8787`. The first version audits CSV contact lists and creates downloadable clean-list and findings reports. It has no database or mail-sending service. The app binds to the local machine only. See [LOCAL-EDITION.md](LOCAL-EDITION.md) for supported checks, data handling, limitations, and the roadmap.
 
 ## Design
 

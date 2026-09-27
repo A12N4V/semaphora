@@ -1,0 +1,11 @@
+FROM node:24-alpine
+
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=8787
+WORKDIR /app
+
+COPY local-edition ./local-edition
+COPY assets/local-edition-header.png ./assets/local-edition-header.png
+
+USER node
+EXPOSE 8787
+CMD ["node", "local-edition/server.mjs"]

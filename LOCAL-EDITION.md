@@ -8,7 +8,31 @@ The public GitHub Pages app is **Semaphora Studio**: import or edit a CSV, write
 
 ## Local
 
-**Semaphora Local** is the planned localhost workbench for deeper campaign analysis and ongoing mail management. It will run on the user's computer, with contact and mailbox data under their control.
+**Semaphora Local** is the self-hosted workbench for deeper campaign analysis and ongoing mail management. Its first contact-audit slice is available to run on the user's own computer. It does not require an account or external service.
+
+## Run the first version
+
+From the repository root, build and start the Docker edition:
+
+```sh
+docker compose -f compose.local.yaml up --build
+```
+
+Open `http://127.0.0.1:8787`. Stop it with `Ctrl+C`. Docker publishes the service to the local machine only. To run without Docker, use Node.js 22 or newer:
+
+```sh
+node local-edition/server.mjs
+```
+
+The current contact audit accepts CSV files up to 10 MB, 100,000 rows, and 200 columns. It reports missing and malformed email addresses, duplicate addresses, suppression and unsubscribe signals, and missing fields. It can download a clean-contact CSV and a findings CSV. The clean export keeps the original columns and excludes invalid addresses, duplicates, and detected suppressed contacts.
+
+This is the first Local feature slice. Campaign report comparisons, link and deliverability checks, mailbox connections, and reviewed inbox cleanup remain planned work. The audit uses deterministic local rules. It does not verify addresses by sending messages or querying third parties.
+
+## Data handling and network boundary
+
+The browser reads the selected file and sends its CSV text to the Semaphora process on loopback for analysis. The process analyzes it in memory and returns the result. Neither the app nor the container writes the CSV, results, or exports to disk. An export is created only when the user clicks a download button. Restarting the app clears the working data.
+
+The first version has no login, mailbox tokens, database, or mail delivery. Docker maps the port to `127.0.0.1`. Do not expose this prototype directly to a public network. Remote cloud hosting needs authentication, TLS, and an explicit deployment/security design first. Users will own and operate their own cloud deployment when that path is ready.
 
 ### Business workspace
 
@@ -24,9 +48,9 @@ The public GitHub Pages app is **Semaphora Studio**: import or edit a CSV, write
 - Group suggested archive, unsubscribe, label, and delete actions for review.
 - Start read-only, show exactly which messages an action affects, require explicit approval for changes, and provide undo where provider APIs support it.
 
-### Local architecture
+### Future Local architecture
 
-Bind the app to `127.0.0.1`; use a small local API and SQLite for opt-in history; keep provider tokens in the operating-system credential store. Share CSV parsing, personalization, and message rendering with Studio. Keep mailbox and delivery integrations modular and request the narrowest delegated permissions.
+Keep the app bound to `127.0.0.1` by default. If opt-in history is added, keep it local and explicit. Store provider tokens in the operating-system credential store. Share CSV parsing, personalization, and message rendering with Studio. Keep mailbox and delivery integrations modular and request the narrowest delegated permissions.
 
 Local execution makes the software free and keeps data under user control. It does not make reliable bulk delivery, domains, AI inference, or provider access free. For business campaigns, let users bring a delivery service they choose or use their own credentials in the local app. Do not present consumer Gmail or Outlook as unlimited bulk mail infrastructure. Do not promise unlimited free sending.
 
@@ -35,7 +59,7 @@ Local execution makes the software free and keeps data under user control. It do
 Start with solo operators and small teams whose contacts and campaign reports live in spreadsheets, plus individuals who want a transparent inbox-cleanup assistant. The shared advantage is inspectability: show the rows, messages, events, and proposed actions behind each recommendation.
 
 1. Stabilize Studio's editing, personalization, preview, and provider send states.
-2. Build a Local import-and-analysis prototype: duplicates, address and field quality, suppression checks, and downloadable findings. No provider sign-in is needed for this first release.
+2. Expand the Local contact auditor with explicit suppression-field mapping and larger-file performance work.
 3. Add report imports, cohort and time-series comparisons, and tagged-link attribution.
 4. Add read-only mailbox connections and cleanup suggestions before enabling reviewed actions.
 5. Add user-selected delivery integrations and scheduling after opt-in records, suppression, unsubscribe, bounce handling, rate limits, and abuse controls are in place.

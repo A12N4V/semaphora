@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#03060b">
+  <meta name="description" content="Run Semaphora Local on your own machine to audit contact lists and campaign data.">
+  <title>Semaphora Local</title>
+  <link rel="stylesheet" href="/local-edition/styles.css">
+</head>
+<body>
+  <main class="local-app">
+    <header class="local-topline">
+      <a class="wordmark" href="/local-edition/" aria-label="Semaphora Local home"><span class="wordmark-glyph" aria-hidden="true">S</span><span>SEMAPHORA <i>LOCAL</i></span></a>
+      <span class="runtime-indicator"><i></i> LOCAL RUNTIME</span>
+    </header>
+
+    <section class="local-hero" aria-label="Semaphora Local">
+      <img src="/assets/local-edition-header.png" alt="A Greek messenger carrying a letter through a moonlit city">
+      <div class="local-hero-shade"></div>
+      <div class="local-hero-copy"><span>CONTACT INTELLIGENCE · V0.1</span><h1>Know your list.</h1><p>Inspect the rows behind every recommendation.</p></div>
+      <span class="hero-mark" aria-hidden="true">01 <i>/</i> AUDIT</span>
+    </section>
+
+    <section class="import-workspace" aria-labelledby="import-heading">
+      <div class="section-heading"><div><span class="eyebrow">01 — IMPORT</span><h2 id="import-heading">Contact audit</h2></div><span class="limit-note">CSV · 10 MB MAX</span></div>
+      <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Choose or drop a CSV file">
+        <input id="csv-file" type="file" accept=".csv,text/csv" hidden>
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 21V5m-6 6 6-6 6 6M5 20v7h22v-7"/></svg>
+        <strong id="file-title">Drop a contact CSV here</strong>
+        <span id="file-detail">or choose a file from this device</span>
+        <button class="choose-file" id="choose-file" type="button">Choose CSV <span aria-hidden="true">↗</span></button>
+      </div>
+      <div class="audit-controls" id="audit-controls" hidden>
+        <label for="email-column">Email column</label>
+        <select id="email-column" aria-label="Email address column"></select>
+        <button class="primary-button" id="analyze-button" type="button" disabled>Analyze list <span aria-hidden="true">→</span></button>
+        <button class="quiet-button" id="change-file" type="button">Change file</button>
+      </div>
+    </section>
+
+    <section class="results" id="results" aria-labelledby="results-heading" hidden>
+      <div class="section-heading results-heading"><div><span class="eyebrow">02 — FINDINGS</span><h2 id="results-heading">List health</h2></div><span class="result-count" id="result-count"></span></div>
+      <div class="metric-grid" id="metric-grid" aria-live="polite"></div>
+      <div class="findings-header"><div><h3>Rows to review</h3><span id="finding-count">0 findings</span></div><label class="filter-label" for="issue-filter"><span>Show</span><select id="issue-filter"><option value="all">All findings</option><option value="block">Needs action</option><option value="review">Review</option></select></label></div>
+      <div class="findings-scroll" id="findings-scroll">
+        <table class="findings-table"><thead><tr><th>ROW</th><th>CONTACT</th><th>EMAIL</th><th>FINDINGS</th></tr></thead><tbody id="findings-body"></tbody></table>
+        <div class="no-findings" id="no-findings" hidden><span aria-hidden="true">✓</span><strong>No flagged rows</strong></div>
+      </div>
+      <div class="export-row"><div><span class="eyebrow">03 — EXPORT</span><span id="export-summary">Clean contacts keep their original columns.</span></div><div class="export-actions"><button class="quiet-button" id="export-findings" type="button">Findings CSV ↓</button><button class="primary-button" id="export-clean" type="button">Clean list <span aria-hidden="true">↓</span></button></div></div>
+    </section>
+
+    <footer class="local-footer"><span>SEMAPHORA LOCAL · USER-RUN</span><span>CONTACT AUDIT · NO DELIVERY</span></footer>
+    <div class="notice" id="notice" role="status" aria-live="polite"></div>
+  </main>
+  <script src="/local-edition/app.js"></script>
+</body>
+</html>
