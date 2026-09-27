@@ -446,7 +446,7 @@
     return response.status === 204 || response.status === 202 ? null : response.json();
   }
   function providerRecord() { return activeRows()[selected] || null; }
-  function providerMime(address, subject, html) {
+  async function providerMime(address, subject, html) {
     const body = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
     const mixed = boundary('mixed'); const related = boundary('related'); const inline = [];
     Array.from(body.body.querySelectorAll('img[src^="data:image/"]')).forEach((image, index) => {
