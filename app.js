@@ -17,6 +17,9 @@
   let selected = 0;
   let log = [];
   let editMode = true;
+  let tableStarted = false;
+  let gridFontSize = 12;
+  let messageFontSize = 13;
   let attachments = [];
   let attachmentId = 0;
   const recordIds = new WeakMap();
@@ -39,6 +42,25 @@
     node.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => node.classList.remove('show'), 2400);
+  }
+
+  function setGridFontSize(size) {
+    gridFontSize = Math.max(10, Math.min(20, size));
+    document.documentElement.style.setProperty('--grid-font-size', `${gridFontSize}px`);
+    $('grid-size-value').value = `${gridFontSize} px`;
+  }
+  function setMessageFontSize(size) {
+    messageFontSize = Math.max(11, Math.min(22, size));
+    editor.style.setProperty('--message-font-size', `${messageFontSize}px`);
+    $('selected-message').style.setProperty('--message-font-size', `${messageFontSize}px`);
+    $('message-size-value').value = `${messageFontSize}`;
+  }
+  function createTable() {
+    if (!tableStarted) {
+      headers = ['Email', 'Name']; rows = []; selected = 0; log = [];
+    }
+    tableStarted = true; editMode = true;
+    renderFields(); renderGrid(); renderList(); focusGridCell(0, 0);
   }
 
   function setTab(index) {
@@ -252,16 +274,18 @@
   function renderList() {
     const recipients = activeRows();
     const hasRows = recipients.length > 0;
-    $('spreadsheet-panel').hidden = !editMode;
-    $('table-toggle').textContent = editMode ? 'View list' : 'Edit CSV';
+    $('list-local-banner').hidden = tableStarted;
+    $('spreadsheet-panel').hidden = !tableStarted || !editMode;
+    $('table-toggle').hidden = !hasRows;
+    $('table-toggle').textContent = editMode ? 'View list' : 'Edit table';
     $('table-toggle').disabled = !hasRows;
     $('list-layout').hidden = !hasRows || editMode;
-    $('empty-list').hidden = hasRows || editMode;
-    $('drop-hint').hidden = hasRows || editMode;
+    $('empty-list').hidden = hasRows || tableStarted;
+    $('drop-hint').hidden = hasRows || tableStarted;
     $('recipient-picker').hidden = !hasRows || editMode;
     $('recipient-picker-label').hidden = !hasRows || editMode;
     $('list-count').textContent = recipients.length;
-    $('list-subtitle').textContent = hasRows ? `${recipients.length} recipient${recipients.length === 1 ? '' : 's'}` : 'Add recipients or import a CSV.';
+    $('list-subtitle').textContent = hasRows ? `${recipients.length} recipient${recipients.length === 1 ? '' : 's'}` : tableStarted ? 'Add recipients to your table.' : 'Import a CSV or create a table.';
     if (!hasRows || editMode) return;
     selected = Math.min(selected, recipients.length - 1);
 
@@ -607,6 +631,10 @@
     const cell = event.target.closest('.grid-cell');
     if (!cell) return;
     const row = Number(cell.dataset.gridRow); const column = Number(cell.dataset.gridCol);
+    if (event.key === 'ArrowDown' && row < rows.length) { event.preventDefault(); focusGridCell(row + 1, column); return; }
+    if (event.key === 'ArrowUp' && row > 0) { event.preventDefault(); focusGridCell(row - 1, column); return; }
+    if (!event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey && event.key === 'ArrowRight' && cell.selectionStart === cell.value.length && column < headers.length - 1) { event.preventDefault(); focusGridCell(row, column + 1); return; }
+    if (!event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey && event.key === 'ArrowLeft' && cell.selectionStart === 0 && column > 0) { event.preventDefault(); focusGridCell(row, column - 1); return; }
     if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === 'Enter') {
       event.preventDefault(); addGridRow(); return;
     }
@@ -664,7 +692,7 @@
       try {
         const parsed = parseCSV(String(reader.result || ''));
         if (!parsed.rows.length) throw new Error('No rows found below the headers.');
-        headers = parsed.headers; rows = parsed.rows; selected = 0; log = []; editMode = false;
+        headers = parsed.headers; rows = parsed.rows; selected = 0; log = []; editMode = true; tableStarted = true;
         renderFields(); renderGrid(); renderList(); renderLog(); toast(`${rows.length} recipients loaded.`);
       } catch (error) { toast(error.message || 'Could not read this CSV.'); }
       fileInput.value = '';
@@ -674,11 +702,21 @@
   }
 
   tabs.forEach(({ button }, index) => button.addEventListener('click', () => setTab(index)));
+  const localDialog = $('local-edition-dialog');
+  document.querySelectorAll('.local-edition-open').forEach((button) => button.addEventListener('click', () => localDialog.showModal()));
+  $('local-dialog-close').addEventListener('click', () => localDialog.close());
+  localDialog.addEventListener('click', (event) => { if (event.target === localDialog) localDialog.close(); });
   fileInput.addEventListener('change', () => acceptFile(fileInput.files[0]));
+  $('empty-import').addEventListener('click', () => fileInput.click());
+  $('create-table').addEventListener('click', createTable);
   $('table-toggle').addEventListener('click', () => { editMode = !editMode; renderList(); });
   $('add-row').addEventListener('click', () => addGridRow());
   $('add-column').addEventListener('click', addGridColumn);
   $('download-csv').addEventListener('click', downloadCsv);
+  $('grid-size-down').addEventListener('click', () => setGridFontSize(gridFontSize - 1));
+  $('grid-size-up').addEventListener('click', () => setGridFontSize(gridFontSize + 1));
+  $('message-size-down').addEventListener('click', () => setMessageFontSize(messageFontSize - 1));
+  $('message-size-up').addEventListener('click', () => setMessageFontSize(messageFontSize + 1));
   $('attach-media').addEventListener('click', () => mediaInput.click());
   grid.addEventListener('paste', (event) => {
     const cell = event.target.closest('.grid-cell');
@@ -734,11 +772,26 @@
   grid.addEventListener('keydown', handleGridKeydown);
   mediaInput.addEventListener('change', () => { acceptMedia(mediaInput.files); mediaInput.value = ''; });
   const toolbar = document.querySelector('.message-toolbar');
-  toolbar.addEventListener('mousedown', (event) => { rememberRange(); if (event.target.closest('[data-command]')) event.preventDefault(); });
+  toolbar.addEventListener('mousedown', (event) => { rememberRange(); if (event.target.closest('[data-command], [data-action]')) event.preventDefault(); });
   toolbar.addEventListener('click', (event) => {
     const button = event.target.closest('[data-command]');
+    const action = event.target.closest('[data-action]');
+    if (action?.dataset.action === 'link') {
+      const selection = window.getSelection();
+      if (!savedRange || !editor.contains(savedRange.startContainer) || !selection?.toString().trim()) { toast('Select text to add a link.'); return; }
+      let href = window.prompt('Link address');
+      if (!href) return;
+      href = href.trim();
+      if (!/^(https?:|mailto:)/i.test(href)) href = `https://${href}`;
+      if (!/^https?:\/\/[^\s]+$|^mailto:[^\s@]+@[^\s@]+$/i.test(href)) { toast('Enter a valid web or email link.'); return; }
+      editor.focus();
+      const range = savedRange;
+      selection.removeAllRanges(); selection.addRange(range);
+      document.execCommand('createLink', false, href);
+      rememberRange(); renderList(); return;
+    }
     if (!button) return;
-    editor.focus(); document.execCommand(button.dataset.command, false); renderList();
+    editor.focus(); document.execCommand(button.dataset.command, false); rememberRange(); renderList();
   });
   editor.addEventListener('keyup', rememberRange);
   editor.addEventListener('mouseup', rememberRange);
@@ -804,5 +857,6 @@
   editor.addEventListener('input', () => { rememberRange(); renderList(); });
   $('save-template').addEventListener('click', () => { renderList(); toast('Message updated.'); });
   $('clear-log').addEventListener('click', () => { log = []; renderLog(); renderList(); });
+  setGridFontSize(gridFontSize); setMessageFontSize(messageFontSize);
   renderFields(); renderGrid(); renderList(); renderLog(); updateIntegrationUI();
 })();

@@ -16,11 +16,12 @@
     15,47, 7,39,13,45, 5,37,
     63,31,55,23,61,29,53,21,
   ];
-  const image = document.getElementById('hero-art');
-  const canvas = document.getElementById('hero-dither');
-  if (!image || !canvas) return;
-  const ink = [0, 3, 11];
-  const scale = 3.2;
+  function attachDither(imageId, canvasId) {
+    const image = document.getElementById(imageId);
+    const canvas = document.getElementById(canvasId);
+    if (!image || !canvas) return;
+    const ink = [0, 3, 11];
+    const scale = 3.2;
 
   function stretch(lum, cutoff = 0.02) {
     const hist = new Uint32Array(256);
@@ -72,8 +73,12 @@
     out.putImageData(frame, 0, 0);
   }
 
-  if (image.complete && image.naturalWidth) draw();
-  else image.addEventListener('load', draw, { once: true });
-  const observer = new ResizeObserver(draw);
-  observer.observe(canvas);
+    if (image.complete && image.naturalWidth) draw();
+    else image.addEventListener('load', draw, { once: true });
+    const observer = new ResizeObserver(draw);
+    observer.observe(canvas);
+  }
+
+  attachDither('hero-art', 'hero-dither');
+  attachDither('local-hero-art', 'local-hero-dither');
 })();

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#000000">
   <meta name="description" content="Free browser mail merge from a CSV, with a planned localhost edition for campaign analysis and inbox care.">
   <title>Semaphora</title>
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
   <main id="top">
@@ -26,15 +26,15 @@
 
       <section class="tab-panel active" id="panel-list" role="tabpanel" aria-labelledby="tab-list">
         <div class="panel-top"><div><h2>Email list</h2><p id="list-subtitle">Add recipients or import a CSV.</p></div>
-          <div class="list-actions"><button class="table-toggle" id="table-toggle" type="button">View list</button><label class="upload-button" for="csv-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m-4 4 4-4 4 4M4 12v4h12v-4"/></svg><span>Import CSV</span><input id="csv-file" type="file" accept=".csv,text/csv"></label></div>
+          <div class="list-actions"><button class="table-toggle" id="table-toggle" type="button" hidden>View list</button><label class="upload-button" for="csv-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M4 13v4h12v-4"/></svg><span>Import CSV</span><input id="csv-file" type="file" accept=".csv,text/csv"></label></div>
         </div>
-        <div class="spreadsheet-panel" id="spreadsheet-panel">
-          <div class="spreadsheet-tools"><div class="sheet-actions"><button class="sheet-button" id="add-row" type="button"><span>＋</span> Row</button><button class="sheet-button" id="add-column" type="button"><span>＋</span> Column</button><button class="sheet-button" id="download-csv" type="button">↓ CSV</button></div><span class="sheet-shortcuts">Enter ↓ &nbsp; Tab → &nbsp; ⌘/Ctrl+Shift+↵ row &nbsp; ⌘/Ctrl+Shift+= column</span></div>
+        <div class="spreadsheet-panel" id="spreadsheet-panel" hidden>
+          <div class="spreadsheet-tools"><div class="sheet-actions"><button class="sheet-button" id="add-row" type="button"><span>＋</span> Row</button><button class="sheet-button" id="add-column" type="button"><span>＋</span> Column</button><span class="size-control" aria-label="Table text size"><button class="sheet-button size-button" id="grid-size-down" type="button" aria-label="Decrease table text size" title="Decrease text size">A−</button><output id="grid-size-value">12 px</output><button class="sheet-button size-button" id="grid-size-up" type="button" aria-label="Increase table text size" title="Increase text size">A+</button></span><button class="sheet-button export-button" id="download-csv" type="button" aria-label="Export CSV" title="Export CSV"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15V5m-4 4 4-4 4 4M4 12v5h12v-5"/></svg><span>Export CSV</span></button></div><span class="sheet-shortcuts">Tab / arrows move · paste ranges · ⌘/Ctrl+Shift+↵ row · ⌘/Ctrl+Shift+= column</span></div>
           <div class="spreadsheet-scroll" id="spreadsheet-scroll"><table class="spreadsheet" id="spreadsheet" aria-label="Editable recipient CSV"></table></div>
         </div>
         <label class="recipient-picker-label" id="recipient-picker-label" for="recipient-picker" hidden>RECIPIENT</label>
         <select class="recipient-picker" id="recipient-picker" aria-label="Choose recipient" hidden></select>
-        <div class="drop-hint" id="drop-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 15v5h16v-5"/></svg><span>Drop a CSV here</span></div>
+        <div class="drop-hint" id="drop-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12m-5-5 5 5 5-5M4 18h16"/></svg><span>Drop a CSV here</span><span class="drop-or">or</span><button class="empty-import" id="empty-import" type="button">Choose CSV</button></div>
         <div class="list-layout" id="list-layout" hidden>
           <div class="recipient-list" id="recipient-list" aria-label="Recipients"></div>
           <article class="message-card" id="selected-card">
@@ -45,7 +45,11 @@
             <div class="message-controls"><button class="icon-control" id="prev-recipient" aria-label="Previous recipient"><svg viewBox="0 0 20 20"><path d="m12 4-6 6 6 6"/></svg></button><button class="send-button" id="send-selected"><svg viewBox="0 0 20 20"><path d="m3 9 14-6-5 14-2-6-7-2Z"/><path d="m10 11 7-8"/></svg><span>Open mail</span></button><button class="icon-control" id="next-recipient" aria-label="Next recipient"><svg viewBox="0 0 20 20"><path d="m8 4 6 6-6 6"/></svg></button></div>
           </article>
         </div>
-        <div class="empty-state" id="empty-list"><span class="empty-glyph"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M4 9h28v19H4zM4 10l14 11 14-11"/></svg></span><strong>Your recipients will appear here</strong><span>CSV headers become message fields.</span></div>
+        <div class="empty-state" id="empty-list"><span class="empty-glyph"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M7 5h22v26H7zM12 12h12M12 18h12M12 24h7"/></svg></span><strong>Start with a recipient table</strong><span>Add rows now, or import a CSV above.</span><button class="create-table-button" id="create-table" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14"/></svg>Create a table</button></div>
+        <aside class="list-local-banner" id="list-local-banner" aria-label="Semaphora Local in development">
+          <div class="list-local-copy"><span>IN DEVELOPMENT · OPEN SOURCE</span><strong>Semaphora Local</strong><p>Campaign analysis, mailbox care, self-hosted workflows.</p></div>
+          <button class="local-edition-open list-local-open" id="list-local-open" type="button">Explore <span aria-hidden="true">↗</span></button>
+        </aside>
       </section>
 
       <section class="tab-panel" id="panel-compose" role="tabpanel" aria-labelledby="tab-compose" hidden>
@@ -55,12 +59,23 @@
         <div class="field-row"><label class="field-label" for="template">MESSAGE</label><span class="field-hint">Insert field</span></div>
         <div class="fields" id="fields"></div>
         <div class="message-toolbar" role="toolbar" aria-label="Message formatting">
+          <button class="format-button" type="button" data-command="undo" aria-label="Undo" title="Undo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 6 3 9l4 3M4 9h7a5 5 0 0 1 5 5"/></svg></button>
+          <button class="format-button" type="button" data-command="redo" aria-label="Redo" title="Redo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m13 6 4 3-4 3m3-3H9a5 5 0 0 0-5 5"/></svg></button>
+          <span class="toolbar-divider" aria-hidden="true"></span>
           <button class="format-button" type="button" data-command="bold" aria-label="Bold" title="Bold"><strong>B</strong></button>
           <button class="format-button" type="button" data-command="italic" aria-label="Italic" title="Italic"><em>I</em></button>
+          <button class="format-button" type="button" data-command="underline" aria-label="Underline" title="Underline"><u>U</u></button>
+          <span class="toolbar-divider" aria-hidden="true"></span>
           <button class="format-button" type="button" data-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4" cy="5" r="1"/><circle cx="4" cy="10" r="1"/><circle cx="4" cy="15" r="1"/><path d="M8 5h9M8 10h9M8 15h9"/></svg></button>
+          <button class="format-button" type="button" data-command="insertOrderedList" aria-label="Numbered list" title="Numbered list"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9 5h8M9 10h8M9 15h8"/><path d="M3 4h2v3M3 10h2l-2 2h2M3 14h2l-2 2h2"/></svg></button>
+          <button class="format-button" type="button" data-action="link" aria-label="Insert link" title="Insert link"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 7 2-2a3 3 0 0 1 4 4l-1 1M13 13l-2 2a3 3 0 0 1-4-4l1-1M7 10h6"/></svg></button>
+          <button class="format-button" type="button" data-command="removeFormat" aria-label="Clear formatting" title="Clear formatting"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 15 8-10m-5 0h9M8 15h8M3 18 17 4"/></svg></button>
+          <span class="toolbar-divider" aria-hidden="true"></span>
+          <span class="size-control message-size-control" aria-label="Message text size"><button class="format-button size-button" id="message-size-down" type="button" aria-label="Decrease message text size" title="Decrease text size">A−</button><output id="message-size-value">13</output><button class="format-button size-button" id="message-size-up" type="button" aria-label="Increase message text size" title="Increase text size">A+</button></span>
+          <span class="toolbar-divider" aria-hidden="true"></span>
           <button class="format-button attach-button" id="attach-media" type="button" title="Attach files" aria-label="Attach files"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 10 5.6-5.6a3 3 0 0 1 4.2 4.2l-7.8 7.8a4.5 4.5 0 0 1-6.4-6.4l7.8-7.8"/></svg></button>
           <input id="media-files" class="media-file-input" type="file" multiple aria-label="Choose attachments">
-          <span class="toolbar-hint">Paste or drop media</span>
+          <span class="toolbar-hint">⌘/Ctrl+Z undo · paste or drop media</span>
         </div>
         <div class="message-input" id="template" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Message content" data-placeholder="Write your message…" spellcheck="true"></div>
         <div class="attachment-list" id="attachment-list" aria-label="Attachments" hidden></div>
@@ -78,12 +93,12 @@
         <div class="panel-top"><div><h2>Mailboxes</h2><p>Connect an account to create drafts or send.</p></div></div>
         <div class="integration-list">
           <article class="integration-card" data-provider="microsoft">
-            <div class="integration-mark microsoft-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <div class="integration-mark microsoft-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path fill="#f35325" d="M2 2h9.5v9.5H2z"/><path fill="#81bc06" d="M12.5 2H22v9.5h-9.5z"/><path fill="#05a6f0" d="M2 12.5h9.5V22H2z"/><path fill="#ffba08" d="M12.5 12.5H22V22h-9.5z"/></svg></div>
             <div class="integration-info"><h3>Microsoft</h3><p class="integration-account" id="microsoft-account">Not connected</p><small id="microsoft-status">Setup required</small></div>
             <div class="integration-actions"><button class="integration-connect" id="microsoft-connect" type="button">Connect</button><button class="integration-disconnect" id="microsoft-disconnect" type="button" hidden>Disconnect</button></div>
           </article>
           <article class="integration-card" data-provider="google">
-            <div class="integration-mark google-mark" aria-hidden="true">G</div>
+            <div class="integration-mark google-mark" aria-hidden="true"><svg viewBox="0 0 48 48" role="img"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4 6v5.1h6.5c3.8-3.5 6.1-8.6 6.1-14.8z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8L31 34.1c-1.8 1.2-4.1 2-7 2-5.3 0-9.8-3.6-11.4-8.4H5.9v5.3C9.3 39.5 16 44 24 44z"/><path fill="#FBBC05" d="M12.6 27.7a12 12 0 0 1 0-7.4V15H5.9a20 20 0 0 0 0 18l6.7-5.3z"/><path fill="#EA4335" d="M24 11.9c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 5.8 29.5 4 24 4 16 4 9.3 8.5 5.9 15l6.7 5.3c1.6-4.8 6.1-8.4 11.4-8.4z"/></svg></div>
             <div class="integration-info"><h3>Google</h3><p class="integration-account" id="google-account">Not connected</p><small id="google-status">Setup required</small></div>
             <div class="integration-actions"><button class="integration-connect" id="google-connect" type="button">Connect</button><button class="integration-disconnect" id="google-disconnect" type="button" hidden>Disconnect</button></div>
           </article>
@@ -94,19 +109,37 @@
           <p>Choose a recipient in List to create a draft or send from a connected mailbox.</p>
           <div class="integration-compose-actions"><button id="create-provider-draft" type="button" disabled>Create draft</button><button id="send-provider-message" type="button" disabled>Send now</button></div>
         </div>
-        <aside class="local-edition-teaser" aria-label="Semaphora Local edition">
-          <div><span>IN DEVELOPMENT</span><h3>Semaphora Local</h3><p>Campaign analysis · contact hygiene · inbox cleanup</p></div>
-          <a href="https://github.com/A12N4V/semaphora/blob/main/LOCAL-EDITION.md" target="_blank" rel="noopener noreferrer">Explore <span aria-hidden="true">↗</span></a>
+        <aside class="integration-local-footer" aria-label="Semaphora Local in development">
+          <div class="list-local-copy"><span>IN DEVELOPMENT · OPEN SOURCE</span><strong>Semaphora Local</strong><p>Campaign analysis, mailbox care, self-hosted workflows.</p></div>
+          <button class="local-edition-open list-local-open" id="integration-local-open" type="button">Explore <span aria-hidden="true">↗</span></button>
         </aside>
         <div class="integration-config" id="integration-config" hidden></div>
       </section>
+
     </section>
+    <dialog class="local-dialog" id="local-edition-dialog" aria-labelledby="local-dialog-title">
+      <div class="local-dialog-art">
+        <img id="local-hero-art" src="assets/local-edition-header.png" alt="A Greek messenger carrying a sealed letter beneath a night sky">
+        <canvas class="local-dialog-dither" id="local-hero-dither" aria-hidden="true"></canvas>
+        <div class="local-dialog-heading"><span>IN DEVELOPMENT · OPEN SOURCE</span><h2 id="local-dialog-title">Semaphora Local</h2></div>
+        <button class="local-dialog-close" id="local-dialog-close" type="button" aria-label="Close dialog"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+      </div>
+      <div class="local-dialog-content">
+        <p class="local-dialog-lede">Your machine or cloud. Your mailbox. Your data.</p>
+        <div class="local-feature-list">
+          <article class="local-feature"><span class="local-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7"/><circle cx="19" cy="6" r="1.5"/></svg></span><div><h3>Campaign intelligence</h3><p>Compare results, inspect segments, and catch list issues before a send.</p></div></article>
+          <article class="local-feature"><span class="local-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6.5h16v12H4zM4 7l8 6 8-6"/><path d="M8 3.5h8"/></svg></span><div><h3>Mailbox care</h3><p>Review bulk mail, stale subscriptions, and cleanup suggestions before acting.</p></div></article>
+          <article class="local-feature"><span class="local-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v4m0 10v4M3 12h4m10 0h4M5.6 5.6l2.8 2.8m7.2 7.2 2.8 2.8m0-12.8-2.8 2.8m-7.2 7.2-2.8 2.8"/><circle cx="12" cy="12" r="4"/></svg></span><div><h3>Self-hosted workflows</h3><p>Run locally or on a server you control, with your own mailbox and delivery provider.</p></div></article>
+        </div>
+        <div class="local-dialog-foot"><span>PLANNED · USER-HOSTED</span><a href="https://github.com/A12N4V/semaphora/blob/main/LOCAL-EDITION.md" target="_blank" rel="noopener noreferrer">Explore the hosting plan <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
-  <script src="hero-dither.js"></script>
+  <script src="hero-dither.js?v=2"></script>
   <script src="assets/vendor/msal-browser.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="oauth-config.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
