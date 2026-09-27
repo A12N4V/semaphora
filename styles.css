@@ -275,3 +275,20 @@ main{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;
   .list-local-open{align-self:center}
 }
 .list-layout[hidden],.drop-hint[hidden],.empty-state[hidden],.log-list[hidden],.recipient-picker[hidden],.recipient-picker-label[hidden],.clear-log[hidden]{display:none!important}
+
+/* Let flex children shrink to the available mobile viewport width. */
+main,.hero,.desk,.tabs,.tab-panel,.panel-top,.panel-top>div,.field-row,
+.message-toolbar,.message-input,.text-input,.fields,.compose-foot,
+.integration-list,.integration-card,.integration-compose,.integration-compose-head,
+.integration-target,.integration-local-footer,.list-local-banner{min-width:0;max-width:100%}
+.tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;white-space:nowrap}
+.field-row{gap:10px}
+.field-hint{text-align:right;white-space:nowrap}
+.message-input,.text-input{min-width:0}
+.message-toolbar{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scrollbar-width:thin;scrollbar-color:#24436e #000}
+.toolbar-hint{flex:none;white-space:nowrap}
+.compose-foot>span{min-width:0;overflow-wrap:anywhere}
+.integration-compose-head{flex-wrap:wrap}
+.integration-target select{min-width:0}
