@@ -24,8 +24,12 @@
       </nav>
 
       <section class="tab-panel active" id="panel-list" role="tabpanel" aria-labelledby="tab-list">
-        <div class="panel-top"><div><h2>Email list</h2><p id="list-subtitle">Import a CSV to begin.</p></div>
-          <label class="upload-button" for="csv-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m-4 4 4-4 4 4M4 12v4h12v-4"/></svg><span>Import CSV</span><input id="csv-file" type="file" accept=".csv,text/csv"></label>
+        <div class="panel-top"><div><h2>Email list</h2><p id="list-subtitle">Add recipients or import a CSV.</p></div>
+          <div class="list-actions"><button class="table-toggle" id="table-toggle" type="button">View list</button><label class="upload-button" for="csv-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m-4 4 4-4 4 4M4 12v4h12v-4"/></svg><span>Import CSV</span><input id="csv-file" type="file" accept=".csv,text/csv"></label></div>
+        </div>
+        <div class="spreadsheet-panel" id="spreadsheet-panel">
+          <div class="spreadsheet-tools"><div class="sheet-actions"><button class="sheet-button" id="add-row" type="button"><span>＋</span> Row</button><button class="sheet-button" id="add-column" type="button"><span>＋</span> Column</button><button class="sheet-button" id="download-csv" type="button">↓ CSV</button></div><span class="sheet-shortcuts">Enter ↓ &nbsp; Tab → &nbsp; ⌘/Ctrl+Shift+↵ row &nbsp; ⌘/Ctrl+Shift+= column</span></div>
+          <div class="spreadsheet-scroll" id="spreadsheet-scroll"><table class="spreadsheet" id="spreadsheet" aria-label="Editable recipient CSV"></table></div>
         </div>
         <label class="recipient-picker-label" id="recipient-picker-label" for="recipient-picker" hidden>RECIPIENT</label>
         <select class="recipient-picker" id="recipient-picker" aria-label="Choose recipient" hidden></select>
@@ -49,15 +53,24 @@
         <input class="text-input" id="subject" placeholder="Subject">
         <div class="field-row"><label class="field-label" for="template">MESSAGE</label><span class="field-hint">Insert field</span></div>
         <div class="fields" id="fields"></div>
-        <textarea class="message-input" id="template" spellcheck="false" placeholder="Write your message…"></textarea>
+        <div class="message-toolbar" role="toolbar" aria-label="Message formatting">
+          <button class="format-button" type="button" data-command="bold" aria-label="Bold" title="Bold"><strong>B</strong></button>
+          <button class="format-button" type="button" data-command="italic" aria-label="Italic" title="Italic"><em>I</em></button>
+          <button class="format-button" type="button" data-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4" cy="5" r="1"/><circle cx="4" cy="10" r="1"/><circle cx="4" cy="15" r="1"/><path d="M8 5h9M8 10h9M8 15h9"/></svg></button>
+          <button class="format-button attach-button" id="attach-media" type="button" title="Attach files" aria-label="Attach files"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 10 5.6-5.6a3 3 0 0 1 4.2 4.2l-7.8 7.8a4.5 4.5 0 0 1-6.4-6.4l7.8-7.8"/></svg></button>
+          <input id="media-files" class="media-file-input" type="file" multiple aria-label="Choose attachments">
+          <span class="toolbar-hint">Paste or drop media</span>
+        </div>
+        <div class="message-input" id="template" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Message content" data-placeholder="Write your message…" spellcheck="true"></div>
+        <div class="attachment-list" id="attachment-list" aria-label="Attachments" hidden></div>
         <div class="compose-foot"><span><i class="key-icon">( )</i> Fields match CSV headers</span><button class="save-button" id="save-template">Save message <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg></button></div>
       </section>
 
       <section class="tab-panel" id="panel-log" role="tabpanel" aria-labelledby="tab-log" hidden>
-        <div class="panel-top"><div><h2>Send log</h2><p id="log-subtitle">No drafts opened yet.</p></div><button class="clear-log" id="clear-log" hidden>Clear</button></div>
+        <div class="panel-top"><div><h2>Send log</h2><p id="log-subtitle">No drafts yet.</p></div><button class="clear-log" id="clear-log" hidden>Clear</button></div>
         <div class="log-list" id="log-list"></div>
-        <div class="empty-state log-empty" id="empty-log"><span class="empty-glyph check-glyph"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><path d="m11 18 5 5 10-11"/></svg></span><strong>Nothing sent yet</strong><span>Opened drafts will be recorded here.</span></div>
-        <p class="log-note">A check means the draft opened in your mail app.</p>
+        <div class="empty-state log-empty" id="empty-log"><span class="empty-glyph check-glyph"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><path d="m11 18 5 5 10-11"/></svg></span><strong>No drafts yet</strong><span>Prepared drafts will appear here.</span></div>
+        <p class="log-note">Mail apps do not report delivery back to this page.</p>
       </section>
     </section>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>

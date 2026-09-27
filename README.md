@@ -2,17 +2,17 @@
 
 ![Semaphora banner: Hermes in a dithered engraving](assets/hermes-header.png)
 
-A static mail merge workspace. Load a CSV, write a message with `(column_name)` fields, review each recipient, and open a personalized draft in your system mail app.
+A static mail merge workspace. Edit a recipient table or import a CSV, write a message with `(column_name)` fields, and prepare personalized drafts.
 
 ## Use
 
-Open `index.html` in a modern browser. Import `sample-recipients.example.csv` to try the app. The Input tab has a sample message and subject. Replace the sample values with your own list and message.
+Open `index.html` in a modern browser. Import `sample-recipients.example.csv` to try the app, or enter recipients in the editable table. Edit cells, add rows or columns, and download the table as CSV.
 
 CSV files need a header row and an `email`, `e-mail`, or `email address` column. Fields match headers without regard to capitalization. Click a field chip to insert it into the message.
 
-Choose a recipient in the List tab, review the personalized message, then select **Open mail**. This hands a `mailto:` draft to the system mail app. The browser cannot confirm whether a message was sent. The green check in the log means the mail app handoff was requested.
+Paste formatted text and images into the message editor, or attach media and other files. Text-only drafts open in the system mail app. Drafts with rich formatting or media download as `.eml` files, which can be opened in a mail app. The log records draft preparation, not confirmed delivery.
 
-Recipient lists and the log stay in browser memory for the current page session. Semaphora has no backend, database, account, or analytics.
+Recipient lists, message content, attachments, and the log stay in browser memory for the current page session. Semaphora has no backend, database, account, or analytics.
 
 ## Design
 
