@@ -4,7 +4,8 @@
   const tabs = [
     { button: $('tab-list'), panel: $('panel-list') },
     { button: $('tab-compose'), panel: $('panel-compose') },
-    { button: $('tab-log'), panel: $('panel-log') }
+    { button: $('tab-log'), panel: $('panel-log') },
+    { button: $('tab-integrations'), panel: $('panel-integrations') }
   ];
   const fileInput = $('csv-file');
   const mediaInput = $('media-files');
@@ -22,6 +23,8 @@
   let nextRecordId = 0;
   let savedRange = null;
   let toastTimer;
+  const oauthConfig = window.SEMAPHORA_OAUTH || {};
+  const mailbox = { microsoft: null, google: null, activeProvider: 'microsoft', msal: null, googleToken: null, googleTokenExpires: 0, googleTokenClient: null };
 
   function blankRecord() { return Object.fromEntries(headers.map((header) => [header, ''])); }
   function activeRows() { return rows.filter((record) => headers.some((header) => String(record[header] ?? '').trim())); }
@@ -279,13 +282,14 @@
       details.type = 'button'; details.className = 'recipient-select';
       details.innerHTML = `<span class="recipient-avatar">${escapeText(initials)}</span><span class="recipient-meta"><strong>${escapeText(fullName(record))}</strong><small>${escapeText(emailKey() ? record[emailKey()] : 'No email field')}</small></span>`;
       details.addEventListener('click', () => setRecipient(index));
-      const sent = log.some((entry) => entry.rowId === rowId(record));
+      const previous = log.find((entry) => entry.rowId === rowId(record));
+      const sent = previous?.mode === 'sent';
       const state = document.createElement('button');
       state.type = 'button'; state.className = 'recipient-send';
-      state.setAttribute('aria-label', sent ? 'Draft already prepared' : (editorHasRichContent() ? 'Save draft file with media' : 'Open draft in mail app'));
+      state.setAttribute('aria-label', sent ? 'Message sent' : mailbox[mailbox.activeProvider] ? `Send with ${mailbox[mailbox.activeProvider].email}` : previous ? 'Draft already prepared' : (editorHasRichContent() ? 'Save draft file with media' : 'Open draft in mail app'));
       state.innerHTML = sent ? '<svg class="tiny-check" viewBox="0 0 20 20"><path d="m4 10 4 4 8-9"/></svg>' : '<svg viewBox="0 0 20 20"><path d="m3 9 14-6-5 14-2-6-7-2Z"/></svg>';
       state.disabled = sent || !emailKey() || !String(emailKey() ? record[emailKey()] : '').trim();
-      state.addEventListener('click', (event) => { event.stopPropagation(); setRecipient(index); openDraft().catch(() => toast('Could not prepare this draft.')); });
+      state.addEventListener('click', (event) => { event.stopPropagation(); setRecipient(index); if (mailbox[mailbox.activeProvider]) providerMessage('send').catch((error) => integrationError(error, 'Could not send the message.')); else openDraft().catch(() => toast('Could not prepare this draft.')); });
       outer.append(details, state);
       list.append(outer);
     });
@@ -293,11 +297,12 @@
     const record = recipients[selected];
     $('recipient-picker').value = String(selected);
     const logEntry = log.find((entry) => entry.rowId === rowId(record));
-    const sent = !!logEntry;
+    const sent = logEntry?.mode === 'sent';
     const address = emailKey() ? String(record[emailKey()] || '').trim() : '';
     $('selected-position').textContent = `${String(selected + 1).padStart(2, '0')} / ${String(recipients.length).padStart(2, '0')}`;
-    $('selected-status').textContent = sent ? (logEntry.mode === 'eml' ? 'DRAFT SAVED' : 'DRAFT OPENED') : 'NOT OPENED';
+    $('selected-status').textContent = sent ? 'SENT' : logEntry?.mode === 'failed' ? 'FAILED' : logEntry ? (logEntry.mode === 'provider-draft' || logEntry.mode === 'eml' ? 'DRAFT SAVED' : 'DRAFT OPENED') : 'NOT OPENED';
     $('selected-status').classList.toggle('done', sent);
+    $('selected-status').classList.toggle('failed', logEntry?.mode === 'failed');
     $('selected-email').textContent = address || 'No email address';
     $('selected-subject').textContent = personalized($('subject').value, record) || '(no subject)';
     const preview = $('selected-message');
@@ -306,8 +311,9 @@
     $('prev-recipient').disabled = recipients.length < 2;
     $('next-recipient').disabled = recipients.length < 2;
     $('send-selected').disabled = sent || !address;
-    $('send-selected').querySelector('span').textContent = sent ? 'Prepared' : (editorHasRichContent() ? 'Export .eml' : 'Open mail');
+    $('send-selected').querySelector('span').textContent = sent ? 'Sent' : logEntry && logEntry.mode !== 'failed' ? 'Prepared' : (editorHasRichContent() ? 'Export .eml' : 'Open mail');
     $('send-selected').setAttribute('aria-label', sent ? 'Draft prepared' : (editorHasRichContent() ? 'Export email draft with media' : 'Open draft in mail app'));
+    updateIntegrationUI();
   }
 
   function escapeText(text) {
@@ -326,21 +332,194 @@
   }
   function renderLog() {
     $('log-count').textContent = log.length;
-    $('log-subtitle').textContent = log.length ? `${log.length} draft${log.length === 1 ? '' : 's'} prepared` : 'No drafts yet.';
+    const sentCount = log.filter((entry) => entry.mode === 'sent').length;
+    const failedCount = log.filter((entry) => entry.mode === 'failed').length;
+    const draftCount = log.length - sentCount - failedCount;
+    $('log-subtitle').textContent = log.length ? `${sentCount} sent · ${failedCount} failed · ${draftCount} drafts` : 'No activity yet.';
     $('empty-log').hidden = log.length > 0;
     $('log-list').hidden = log.length === 0;
     $('clear-log').hidden = log.length === 0;
     const list = $('log-list'); list.replaceChildren();
     log.slice().reverse().forEach((entry) => {
       const row = document.createElement('div'); row.className = 'log-row';
-      const check = document.createElement('span'); check.className = 'log-check';
-      check.innerHTML = '<svg viewBox="0 0 16 16"><path d="m3 8 3 3 7-7"/></svg>';
+      const check = document.createElement('span'); check.className = `log-check ${entry.mode === 'sent' ? 'log-sent' : entry.mode === 'failed' ? 'log-failed' : 'log-draft'}`;
+      check.innerHTML = entry.mode === 'sent' ? '<svg viewBox="0 0 16 16"><path d="m3 8 3 3 7-7"/></svg>' : entry.mode === 'failed' ? '<svg viewBox="0 0 16 16"><path d="m4 4 8 8m0-8-8 8"/></svg>' : '<svg viewBox="0 0 16 16"><path d="M8 3v5l3 2"/><circle cx="8" cy="8" r="6"/></svg>';
+      check.title = entry.mode === 'sent' ? 'Accepted by provider for sending' : entry.mode === 'failed' ? entry.error || 'Send failed' : 'Draft created';
       const who = document.createElement('span'); who.className = 'log-who'; who.textContent = entry.email;
-      const subject = document.createElement('span'); subject.className = 'log-subject'; subject.textContent = entry.subject;
+      const subject = document.createElement('span'); subject.className = 'log-subject'; subject.textContent = `${entry.mode === 'sent' ? 'SENT' : entry.mode === 'failed' ? 'FAILED' : entry.mode === 'provider-draft' ? 'DRAFT' : 'PREPARED'} · ${entry.subject}`;
       const time = document.createElement('time'); time.className = 'log-time'; time.dateTime = entry.iso; time.textContent = entry.time;
       row.append(check, who, subject, time); list.append(row);
     });
   }
+  function updateIntegrationUI() {
+    const connected = ['microsoft', 'google'].filter((name) => !!mailbox[name]).length;
+    $('integration-count').textContent = connected;
+    for (const name of ['microsoft', 'google']) {
+      const account = mailbox[name];
+      const configured = !!oauthConfig[`${name}ClientId`];
+      $(`${name}-account`).textContent = account?.email || 'Not connected';
+      $(`${name}-status`).textContent = account ? 'Connected for this session' : configured ? 'Ready to connect' : 'Setup required';
+      $(`${name}-connect`).hidden = !!account;
+      $(`${name}-connect`).disabled = !configured || (name === 'microsoft' && !window.msal);
+      $(`${name}-connect`).title = configured ? '' : `Configure the ${name === 'google' ? 'Google' : 'Microsoft'} client ID in oauth-config.js`;
+      $(`${name}-disconnect`).hidden = !account;
+    }
+    const recipients = activeRows();
+    const ready = !!recipients[selected] && !!mailbox[mailbox.activeProvider];
+    $('integration-selection').textContent = recipients.length ? `${selected + 1} / ${recipients.length}` : '0 recipients';
+    const providerSelect = $('mail-provider');
+    if (providerSelect) {
+      const connectedProviders = ['microsoft', 'google'].filter((name) => !!mailbox[name]);
+      providerSelect.disabled = connectedProviders.length === 0;
+      if (!connectedProviders.length) { const option = document.createElement('option'); option.textContent = 'No mailbox connected'; providerSelect.replaceChildren(option); }
+      else providerSelect.replaceChildren(...connectedProviders.map((name) => { const option = document.createElement('option'); option.value = name; option.textContent = mailbox[name].email; return option; }));
+      if (connectedProviders.includes(mailbox.activeProvider)) providerSelect.value = mailbox.activeProvider;
+      else if (connectedProviders.length) mailbox.activeProvider = connectedProviders[0];
+    }
+    $('create-provider-draft').disabled = !ready;
+    $('send-provider-message').disabled = !ready;
+    const status = log.find((entry) => entry.rowId === (recipients[selected] && rowId(recipients[selected])));
+    $('send-provider-message').textContent = status?.mode === 'sent' ? 'Sent' : status?.mode === 'failed' ? 'Retry send' : 'Send now';
+  }
+  function integrationError(error, fallback) {
+    const message = String(error?.message || fallback || 'Mailbox request failed.');
+    toast(message.length > 105 ? `${message.slice(0, 102)}…` : message);
+  }
+  async function connectMicrosoft() {
+    if (!oauthConfig.microsoftClientId || !window.msal) return toast('Add a Microsoft client ID in oauth-config.js.');
+    const redirectUri = `${location.origin}${location.pathname}`;
+    const app = new window.msal.PublicClientApplication({ auth: { clientId: oauthConfig.microsoftClientId, authority: 'https://login.microsoftonline.com/common', redirectUri }, cache: { cacheLocation: 'memoryStorage', storeAuthStateInCookie: false } });
+    await app.initialize();
+    const result = await app.loginPopup({ scopes: ['openid', 'profile', 'email', 'User.Read', 'Mail.ReadWrite', 'Mail.Send'], redirectUri });
+    const account = result.account;
+    if (!account) throw new Error('Microsoft did not return an account.');
+    mailbox.msal = app; mailbox.microsoft = { account, email: account.username || account.name || 'Microsoft account' };
+    updateIntegrationUI(); toast('Microsoft mailbox connected for this session.');
+  }
+  async function connectGoogle() {
+    if (!oauthConfig.googleClientId) return toast('Add a Google client ID in oauth-config.js.');
+    if (!window.google?.accounts?.oauth2) return toast('Google sign-in could not load.');
+    const accessToken = await requestGoogleToken('select_account');
+    const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!profileResponse.ok) throw new Error('Could not read the Google account email.');
+    const profile = await profileResponse.json();
+    if (!profile.email) throw new Error('Google did not return an account email.');
+    mailbox.google = { email: profile.email }; mailbox.googleToken = accessToken;
+    updateIntegrationUI(); toast('Google mailbox connected for this session.');
+  }
+  function requestGoogleToken(prompt = '') {
+    return new Promise((resolve, reject) => {
+      if (!window.google?.accounts?.oauth2) { reject(new Error('Google sign-in could not load.')); return; }
+      mailbox.googleTokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: oauthConfig.googleClientId,
+        scope: 'openid email https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/gmail.compose',
+        callback: (response) => {
+          if (response.error) { reject(new Error(response.error_description || response.error)); return; }
+          mailbox.googleTokenExpires = Date.now() + Math.max(60, Number(response.expires_in || 3600) - 60) * 1000;
+          mailbox.googleToken = response.access_token;
+          resolve(response.access_token);
+        },
+        error_callback: (error) => reject(new Error(error?.message || 'Google sign-in was closed.'))
+      });
+      mailbox.googleTokenClient.requestAccessToken({ prompt });
+    });
+  }
+  async function providerToken(provider) {
+    if (provider === 'google') {
+      if (!mailbox.googleTokenClient) throw new Error('Connect a Google mailbox first.');
+      if (Date.now() >= mailbox.googleTokenExpires) await requestGoogleToken('');
+      return mailbox.googleToken;
+    }
+    const app = mailbox.msal; const account = mailbox.microsoft?.account;
+    if (!app || !account) throw new Error('Connect a Microsoft mailbox first.');
+    try { return (await app.acquireTokenSilent({ account, scopes: ['User.Read', 'Mail.ReadWrite', 'Mail.Send'] })).accessToken; }
+    catch { return (await app.acquireTokenPopup({ account, scopes: ['User.Read', 'Mail.ReadWrite', 'Mail.Send'] })).accessToken; }
+  }
+  async function providerFetch(provider, url, options = {}) {
+    const token = await providerToken(provider);
+    const response = await fetch(url, { ...options, headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
+    if (!response.ok) {
+      let detail = '';
+      try { detail = (await response.json()).error?.message || ''; } catch {}
+      throw new Error(detail || `Mailbox API returned ${response.status}.`);
+    }
+    return response.status === 204 || response.status === 202 ? null : response.json();
+  }
+  function providerRecord() { return activeRows()[selected] || null; }
+  function providerMime(address, subject, html) {
+    const body = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+    const mixed = boundary('mixed'); const related = boundary('related'); const inline = [];
+    Array.from(body.body.querySelectorAll('img[src^="data:image/"]')).forEach((image, index) => {
+      const match = image.getAttribute('src').match(/^data:(image\/[\w.+-]+);base64,([\s\S]+)$/i);
+      if (!match) { image.remove(); return; }
+      const id = `image-${index + 1}-${Date.now()}@semaphora`;
+      image.setAttribute('src', `cid:${id}`); inline.push({ id, type: match[1], base64: match[2].replace(/\s/g, ''), name: `inline-${index + 1}.${match[1].split('/')[1].replace('jpeg', 'jpg')}` });
+    });
+    const parts = [`To: ${safeHeader(address)}`, `Subject: ${encodedHeader(safeHeader(subject))}`, 'MIME-Version: 1.0', `Content-Type: multipart/mixed; boundary="${mixed}"`, '', `--${mixed}`, `Content-Type: multipart/related; boundary="${related}"`, '', `--${related}`, 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', utf8Base64(body.body.innerHTML)];
+    inline.forEach((image) => parts.push(`--${related}`, `Content-Type: ${image.type}`, 'Content-Transfer-Encoding: base64', `Content-ID: <${image.id}>`, `Content-Disposition: inline; filename="${image.name}"`, '', image.base64.match(/.{1,76}/g)?.join('\r\n') || ''));
+    parts.push(`--${related}--`);
+    for (const entry of attachments) {
+      const bytes = new Uint8Array(await entry.file.arrayBuffer());
+      const name = safeHeader(entry.file.name).replace(/["\\]/g, '_').replace(/[^\x20-\x7E]/g, '_') || 'attachment';
+      parts.push(`--${mixed}`, `Content-Type: ${mimeType(entry.file)}; name="${name}"`, 'Content-Transfer-Encoding: base64', `Content-Disposition: attachment; filename="${name}"; filename*=UTF-8''${encodedFilename(entry.file.name)}`, '', bytesToBase64(bytes));
+    }
+    parts.push(`--${mixed}--`, '');
+    return parts.join('\r\n');
+  }
+  async function providerMessageRequest(action) {
+    const provider = mailbox.activeProvider; const record = providerRecord();
+    if (!record || !mailbox[provider]) return toast('Choose a recipient and connect a mailbox.');
+    const address = emailKey() ? String(record[emailKey()] || '').trim() : '';
+    if (!address) return toast('This row has no email address.');
+    const subject = personalized($('subject').value, record).replace(/[\r\n]+/g, ' ').trim();
+    const html = personalizedHtml(record) || `<p>${escapeText(personalized(messageText(), record))}</p>`;
+    const mime = await providerMime(address, subject, html);
+    let result;
+    if (provider === 'google') {
+      const raw = btoa(unescape(encodeURIComponent(mime))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      if (action === 'draft') {
+        result = await providerFetch(provider, 'https://gmail.googleapis.com/gmail/v1/users/me/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: { raw } }) });
+      } else {
+        const draft = await providerFetch(provider, 'https://gmail.googleapis.com/gmail/v1/users/me/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: { raw } }) });
+        result = await providerFetch(provider, 'https://gmail.googleapis.com/gmail/v1/users/me/drafts/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: draft.id }) });
+      }
+    } else {
+      const base = 'https://graph.microsoft.com/v1.0/me';
+      if (action === 'draft') {
+        result = await providerFetch(provider, `${base}/messages`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: btoa(unescape(encodeURIComponent(mime))) });
+      } else {
+        result = await providerFetch(provider, `${base}/sendMail`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: btoa(unescape(encodeURIComponent(mime))) });
+      }
+    }
+    const sent = action === 'send'; const date = new Date();
+    log = log.filter((entry) => entry.rowId !== rowId(record));
+    log.push({ rowId: rowId(record), email: address, subject, mode: sent ? 'sent' : 'provider-draft', provider, iso: date.toISOString(), time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    renderList(); renderLog(); updateIntegrationUI(); toast(sent ? 'Mailbox accepted the message for sending.' : 'Draft created in the connected mailbox.');
+    return result;
+  }
+  async function providerMessage(action) {
+    const record = providerRecord();
+    try {
+      return await providerMessageRequest(action);
+    } catch (error) {
+      if (action === 'send' && record) {
+        const address = emailKey() ? String(record[emailKey()] || '').trim() : '';
+        const date = new Date();
+        log = log.filter((entry) => entry.rowId !== rowId(record));
+        log.push({ rowId: rowId(record), email: address || fullName(record), subject: personalized($('subject').value, record) || '(no subject)', mode: 'failed', provider: mailbox.activeProvider, error: String(error?.message || 'Send failed'), iso: date.toISOString(), time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+        renderList(); renderLog(); updateIntegrationUI();
+      }
+      throw error;
+    }
+  }
+  function disconnectMailbox(provider) {
+    if (provider === 'google' && mailbox.googleToken && window.google?.accounts?.oauth2) window.google.accounts.oauth2.revoke(mailbox.googleToken, () => {});
+    if (provider === 'microsoft') mailbox.msal?.logoutPopup({ account: mailbox.microsoft?.account }).catch(() => {});
+    mailbox[provider] = null;
+    if (provider === 'google') { mailbox.googleToken = null; mailbox.googleTokenExpires = 0; mailbox.googleTokenClient = null; }
+    updateIntegrationUI(); toast('Mailbox disconnected.');
+  }
+  window.addEventListener('pagehide', () => { mailbox.googleToken = null; mailbox.googleTokenExpires = 0; mailbox.microsoft = null; mailbox.google = null; mailbox.msal = null; });
   function renderGrid() {
     const head = document.createElement('thead');
     const headRow = head.insertRow();
@@ -614,9 +793,16 @@
   $('next-recipient').addEventListener('click', () => setRecipient(selected + 1));
   $('recipient-picker').addEventListener('change', (event) => setRecipient(Number(event.currentTarget.value)));
   $('send-selected').addEventListener('click', () => { openDraft().catch(() => toast('Could not prepare this draft.')); });
+  $('microsoft-connect').addEventListener('click', () => connectMicrosoft().catch((error) => integrationError(error, 'Microsoft connection failed.')));
+  $('google-connect').addEventListener('click', () => connectGoogle().catch((error) => integrationError(error, 'Google connection failed.')));
+  $('microsoft-disconnect').addEventListener('click', () => disconnectMailbox('microsoft'));
+  $('google-disconnect').addEventListener('click', () => disconnectMailbox('google'));
+  $('mail-provider').addEventListener('change', (event) => { mailbox.activeProvider = event.currentTarget.value; updateIntegrationUI(); });
+  $('create-provider-draft').addEventListener('click', () => providerMessage('draft').catch((error) => integrationError(error, 'Could not create the draft.')));
+  $('send-provider-message').addEventListener('click', () => providerMessage('send').catch((error) => integrationError(error, 'Could not send the message.')));
   $('subject').addEventListener('input', renderList);
   editor.addEventListener('input', () => { rememberRange(); renderList(); });
   $('save-template').addEventListener('click', () => { renderList(); toast('Message updated.'); });
   $('clear-log').addEventListener('click', () => { log = []; renderLog(); renderList(); });
-  renderFields(); renderGrid(); renderList(); renderLog();
+  renderFields(); renderGrid(); renderList(); renderLog(); updateIntegrationUI();
 })();

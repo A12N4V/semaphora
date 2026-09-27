@@ -21,6 +21,7 @@
         <button class="tab active" id="tab-list" role="tab" aria-selected="true" aria-controls="panel-list"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1"/><path d="M6 8h8M6 11h5"/></svg><span>List</span><b id="list-count">0</b></button>
         <button class="tab" id="tab-compose" role="tab" aria-selected="false" aria-controls="panel-compose"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 15.5 5 11l8.8-8.8a1.4 1.4 0 0 1 2 2L7 13l-3 2.5Z"/><path d="M10.5 4.5 14 8"/></svg><span>Input</span></button>
         <button class="tab" id="tab-log" role="tab" aria-selected="false" aria-controls="panel-log"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 8 14l8-8"/><circle cx="10" cy="10" r="7.5"/></svg><span>Log</span><b id="log-count">0</b></button>
+        <button class="tab" id="tab-integrations" role="tab" aria-selected="false" aria-controls="panel-integrations"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 7.5 9 5.5a3 3 0 0 1 4.2 4.2l-1.4 1.4M13 12.5l-2 2a3 3 0 0 1-4.2-4.2l1.4-1.4M7.5 10h5"/></svg><span>Integrations</span><b id="integration-count">0</b></button>
       </nav>
 
       <section class="tab-panel active" id="panel-list" role="tabpanel" aria-labelledby="tab-list">
@@ -72,10 +73,36 @@
         <div class="empty-state log-empty" id="empty-log"><span class="empty-glyph check-glyph"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><path d="m11 18 5 5 10-11"/></svg></span><strong>No drafts yet</strong><span>Prepared drafts will appear here.</span></div>
         <p class="log-note">Mail apps do not report delivery back to this page.</p>
       </section>
+
+      <section class="tab-panel integrations-panel" id="panel-integrations" role="tabpanel" aria-labelledby="tab-integrations" hidden>
+        <div class="panel-top"><div><h2>Mailboxes</h2><p>Connect an account to create drafts or send.</p></div></div>
+        <div class="integration-list">
+          <article class="integration-card" data-provider="microsoft">
+            <div class="integration-mark microsoft-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <div class="integration-info"><h3>Microsoft</h3><p class="integration-account" id="microsoft-account">Not connected</p><small id="microsoft-status">Setup required</small></div>
+            <div class="integration-actions"><button class="integration-connect" id="microsoft-connect" type="button">Connect</button><button class="integration-disconnect" id="microsoft-disconnect" type="button" hidden>Disconnect</button></div>
+          </article>
+          <article class="integration-card" data-provider="google">
+            <div class="integration-mark google-mark" aria-hidden="true">G</div>
+            <div class="integration-info"><h3>Google</h3><p class="integration-account" id="google-account">Not connected</p><small id="google-status">Setup required</small></div>
+            <div class="integration-actions"><button class="integration-connect" id="google-connect" type="button">Connect</button><button class="integration-disconnect" id="google-disconnect" type="button" hidden>Disconnect</button></div>
+          </article>
+        </div>
+        <div class="integration-compose" id="integration-compose">
+          <div class="integration-compose-head"><strong>Selected message</strong><span id="integration-selection">0 recipients</span></div>
+          <div class="integration-target"><label for="mail-provider">From</label><select id="mail-provider" aria-label="Sending mailbox"></select></div>
+          <p>Choose a recipient in List to create a draft or send from a connected mailbox.</p>
+          <div class="integration-compose-actions"><button id="create-provider-draft" type="button" disabled>Create draft</button><button id="send-provider-message" type="button" disabled>Send now</button></div>
+        </div>
+        <div class="integration-config" id="integration-config" hidden></div>
+      </section>
     </section>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
   <script src="hero-dither.js"></script>
+  <script src="assets/vendor/msal-browser.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="oauth-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
