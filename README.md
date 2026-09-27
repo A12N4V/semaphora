@@ -1,8 +1,10 @@
-# Semaphora
+# Semaphora Studio
 
 ![Semaphora banner: Hermes in a dithered engraving](assets/hermes-header.png)
 
 A static mail merge workspace. Edit a recipient table or import a CSV, write a message with `(column_name)` fields, then prepare drafts or send through a connected Gmail or Microsoft mailbox.
+
+**Semaphora has two editions:** Studio is the browser app hosted here on GitHub Pages. [Semaphora Local](LOCAL-EDITION.md) is the planned localhost workbench for campaign analysis and personal inbox cleanup.
 
 ## Use
 
@@ -20,6 +22,10 @@ Mailbox connections require your own OAuth app registrations. Add their public c
 - **Google:** Create a web OAuth client in Google Cloud. Add `https://a12n4v.github.io` as an authorized JavaScript origin, enable the Gmail API, configure the consent screen, and allow the `gmail.compose` and `userinfo.email` scopes. Google token access is short-lived and held in memory only. Users may need to reconnect after tokens expire.
 
 Recipient lists, message content, attachments, logs, and OAuth access tokens are held in browser memory for the current page session. Semaphora does not save this data. Connected messages go directly from the browser to the selected mail provider. Semaphora has no app backend or database.
+
+## Local edition
+
+The planned local workbench brings campaign analysis, contact hygiene, attribution, and reviewed inbox cleanup to the user's own computer. Read [LOCAL-EDITION.md](LOCAL-EDITION.md) for the product split, architecture, roadmap, and comparison points.
 
 ## Design
 

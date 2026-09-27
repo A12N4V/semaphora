@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="A local-first mail merge workspace.">
+  <meta name="description" content="Free browser mail merge from a CSV, with a planned localhost edition for campaign analysis and inbox care.">
   <title>Semaphora</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
   <main id="top">
     <section class="hero" aria-label="Hermes, Greek messenger">
       <img id="hero-art" src="assets/hermes-header.png" alt="Engraved marble bust of Hermes among signal geometry">
       <canvas class="hero-dither" id="hero-dither" aria-hidden="true"></canvas>
-      <div class="hero-title"><h1>Semaphora</h1></div>
+      <div class="hero-title"><h1>Semaphora</h1><p>FREE BROWSER MAIL MERGE <span>·</span> LOCAL MARKETING INTELLIGENCE</p></div>
     </section>
 
     <section class="desk">
@@ -94,6 +94,10 @@
           <p>Choose a recipient in List to create a draft or send from a connected mailbox.</p>
           <div class="integration-compose-actions"><button id="create-provider-draft" type="button" disabled>Create draft</button><button id="send-provider-message" type="button" disabled>Send now</button></div>
         </div>
+        <aside class="local-edition-teaser" aria-label="Semaphora Local edition">
+          <div><span>IN DEVELOPMENT</span><h3>Semaphora Local</h3><p>Campaign analysis · contact hygiene · inbox cleanup</p></div>
+          <a href="https://github.com/A12N4V/semaphora/blob/main/LOCAL-EDITION.md" target="_blank" rel="noopener noreferrer">Explore <span aria-hidden="true">↗</span></a>
+        </aside>
         <div class="integration-config" id="integration-config" hidden></div>
       </section>
     </section>
@@ -103,6 +107,6 @@
   <script src="assets/vendor/msal-browser.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="oauth-config.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

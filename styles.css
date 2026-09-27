@@ -79,6 +79,8 @@ main{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;
 .spreadsheet .column-remove:hover,.spreadsheet .row-remove:hover{color:#e99c9c}
 .spreadsheet-empty{color:#536782!important}
 .integrations-panel .panel-top{margin-bottom:26px}
+.hero-title p{margin:9px 0 0;color:#a9bdd9;font:8px var(--mono);letter-spacing:.13em}
+.hero-title p span{padding:0 4px;color:#77a6e7}
 .log-check{background:#101923;color:#91a8c8}
 .log-check.log-sent{background:#0d291f;color:var(--green)}
 .log-check.log-failed{background:#301415;color:#ef8f91}
@@ -106,6 +108,12 @@ main{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;
 .integration-target select{max-width:min(100%,320px);height:32px;padding:0 28px 0 9px;border:1px solid #203754;border-radius:0;background:#000;color:#cad9ed;font:9px var(--mono)}
 .integration-compose>p{margin:12px 0 15px;color:#647995;font:9px/1.6 var(--mono)}
 .integration-compose-actions{display:flex;gap:8px}
+.local-edition-teaser{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:18px}
+.local-edition-teaser>div>span{color:#6f8db5;font:7px var(--mono);letter-spacing:.14em}
+.local-edition-teaser h3{margin:5px 0;color:#cddbed;font:500 11px var(--mono)}
+.local-edition-teaser p{margin:0;color:#687e9e;font:8px/1.5 var(--mono)}
+.local-edition-teaser a{flex:none;color:#91b8ee;font:8px var(--mono);text-decoration:none}
+.local-edition-teaser a:hover{color:#e2eeff}
 #send-provider-message{border-color:#315b93;background:#14366a;color:#e5f0ff}
 #send-provider-message:hover:not(:disabled){background:#1c4a8c}
 .integration-config{color:#7185a1;font:9px var(--mono)}
@@ -114,6 +122,7 @@ main{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;
 @media(max-width:760px){.sheet-shortcuts{max-width:48%;overflow:hidden;text-overflow:ellipsis}.spreadsheet-tools{align-items:flex-start;flex-direction:column;gap:5px}.spreadsheet-panel{min-height:0}.message-input[contenteditable="true"]{height:auto;min-height:100px}}
 @media(max-width:430px){.list-actions{gap:4px}.table-toggle{padding:0 7px;font-size:8px}.upload-button{padding:0 8px;font-size:8px}.sheet-shortcuts{max-width:100%;white-space:normal;line-height:1.5}}
 @media(max-width:430px){.integration-card{gap:11px;padding:11px}.integration-mark{width:32px;height:32px}.integration-actions{gap:4px}.integration-actions button{height:30px;padding:0 7px;font-size:8px}.integration-compose{padding:13px}.integration-compose-actions button{flex:1;padding:0 7px;font-size:8px}}
+@media(max-width:760px){.hero-title p{max-width:290px;font-size:7px;line-height:1.6;letter-spacing:.08em}.local-edition-teaser{padding-top:12px}}
 @media(max-width:430px){.tabs{gap:0;padding:0 3px;justify-content:space-between}.tab{gap:4px;padding:0 5px;font-size:8px}.tab svg{width:14px;height:14px}.tab b{font-size:7px;padding:2px 4px}}
 @media(max-width:760px){
   main{padding:0 12px 8px}
