@@ -1,0 +1,16 @@
+Hello (name),
+
+We received a letter from (sender) in your name on (date). Middle Earth Mailroom temporarily holds past-resident government mail as a courtesy. You can:
+
+- Pick up your mail at the Middle Earth Mailroom located in the Pippin Community Center (daily hours of operation are 9:30 AM - 11:00 PM).
+- Authorize an individual to pick it up on your behalf. To do so, please reply with the full name of the person who will pick up your mail. Upon arrival, they must verify their identity with a photo ID.
+
+If we don't hear from you within two weeks, or by (date two weeks from now), your mail will be returned to sender.
+
+If you have any questions or concerns, please contact us at me-mail@uci.edu.
+
+Thank you and have a great day,
+
+Middle Earth Mailroom
+T: (949) 824-3121
+Office Hours: 9:30 AM - 11:00 PM
